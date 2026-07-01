@@ -1,0 +1,15 @@
+1. Application api-handler has been successfully deployed!!
+
+Before deploying, ensure the Kubernetes secret exists in the target namespace:
+
+  kubectl create secret generic run23team1-secret \
+    --from-literal=mongo-uri='<MongoDB connection string>' \
+    --from-literal=jwt-secret='<base64-encoded JWT signing secret>' \
+    --from-literal=aws-access-key-id='<AWS Access Key ID>' \
+    --from-literal=aws-secret-access-key='<AWS Secret Access Key>' \
+    --from-literal=aws-session-token='<AWS Session Token>' \
+    --from-literal=aws-role-arn='<AWS IAM Role ARN>' \
+    --from-literal=ses-from-email='<SES verified sender address>' \
+    --from-literal=frontend-url='http://run23-team1-travel-agency-frontend.s3-website-eu-west-1.amazonaws.com' \
+    --from-literal=rabbitmq-username='<RabbitMQ username>' \
+    --from-literal=rabbitmq-password='<RabbitMQ password>'

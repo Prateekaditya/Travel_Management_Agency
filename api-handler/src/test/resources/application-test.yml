@@ -1,0 +1,24 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+MONGO_URI: mongodb://localhost:27017/test
+
+JWT_SECRET: dGVzdC1qd3Qtc2VjcmV0LWZvci11bml0LXRlc3RzLW9ubHk=
+
+SES_FROM_EMAIL: test@example.com
+
+jwt:
+  secret: dGVzdC1qd3Qtc2VjcmV0LWZvci11bml0LXRlc3RzLW9ubHk=
+  expiration-ms: 86400000
+
+rabbitmq:
+  exchange: bookings
+  routing-key: booking.state.changed
+
+app:
+  frontend-url: http://localhost:5173

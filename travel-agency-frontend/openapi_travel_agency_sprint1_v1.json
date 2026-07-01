@@ -1,0 +1,1100 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "OpenAPI Travel Agency (Sprint 1)",
+        "version": "1.0"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:8080/api/v1",
+        "description": "local development"
+      },
+    {
+        "url": "{protocol}://{host}:{port}/{basePath}",
+        "description": "custom server",
+        "variables": {
+          "protocol": {
+            "enum": ["http", "https"],
+            "default": "https",
+            "description": "The protocol to use"
+          },
+          "host": {
+            "default": "api.example.com",
+            "description": "The host name or IP address"
+          },
+          "port": {
+            "enum": ["80", "443", "8080", "8443"],
+            "default": "443",
+            "description": "The port number"
+          },
+      "basePath": {
+            "default": "api/v1",
+            "description": "Api version"
+          }
+        }
+      }
+    ],
+    "tags": [
+        {
+            "description": "Endpoints related to user authentication and authorization.",
+            "name": "Auth"
+        },
+        {
+            "description": "Endpoints related to tours.",
+            "name": "Tours"
+        },
+        {
+            "description": "Endpoints related to tour bookings.",
+            "name": "Bookings"
+        }
+    ],
+    "paths": {
+        "/auth/sign-up": {
+            "post": {
+                "tags": ["Auth"],
+                "summary": "Sign up a new user (User Story 1, User Story 3)",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SignUpRequestDTO"
+                            },
+                            "example": {
+                                "firstName": "Jhonson",
+                                "lastName": "Doe",
+                                "email": "jhonson_dou@nomail.com",
+                                "password": "password123"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User profile has been successfully created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SignUpResponseDTO"
+                                },
+                                "example": {
+                                    "message": "Account created successfully"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - Email already exists",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SignUpResponseDTO"
+                                },
+                                "example": {
+                                    "message": "Email already exists"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SignUpResponseDTO"
+                                },
+                                "example": {
+                                    "message": "Invalid input provided"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/sign-in": {
+            "post": {
+                "tags": ["Auth"],
+                "summary": "Sign in a user (User Story 2, User Story 3)",
+                "description": "This endpoint allows users to sign in using their email and password. Upon successful authentication, a JWT (JSON Web Token) is returned to the user for session management.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SignInRequestDTO"
+                            },
+                            "example": {
+                                "email": "jhonson_doe@nomail.com",
+                                "password": "password123"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful sign-in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SignInResponseDTO"
+                                },
+                "example": {
+                    "idToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                    "role": "CUSTOMER",
+                    "userName": "Jhonson Doe",
+                    "email": "jhonson_doe@nomail.com"
+                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Wrong password or email",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Wrong password or email"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/tours/destinations": {
+            "get": {
+                "tags": ["Tours"],
+                "summary": "Get a list of destinations based on a query parameter (User Story 4)",
+                "description": "This endpoint allows users to search for destinations based on a query string. The query string must be at least 3 characters long. The response will return a list of destinations that match the query. Used in the search bar destination picker.",
+                "parameters": [
+                    {
+                        "name": "destination",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "minLength": 3
+                        },
+                        "description": "The destination query string to search for. Minimum 3 characters."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of destinations matching the query",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DestinationListResponseDTO"
+                                },
+                                "example": {
+                                    "destinations": [
+                                        "Punta Cana, Dominican Republic",
+                                        "Barahona, Dominican Republic"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/tours/available": {
+            "get": {
+                "tags": ["Tours"],
+                "summary": "Get a paginated list of available tours (User Story 4)",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "minimum": 1
+                        },
+                        "description": "The page number to retrieve. Default is 1."
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 6,
+                            "minimum": 1
+                        },
+                        "description": "The number of items per page. Default is 6."
+                    },
+                    {
+                        "name": "destination",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "Any destination"
+                        },
+                        "description": "Filter by destination. Default is 'Any destination'."
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "nullable": true
+                        },
+                        "description": "Filter by start date. Null for any date."
+                    },
+                    {
+                        "name": "duration",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "nullable": true
+                        },
+                        "description": "Filter by duration. Null for any duration."
+                    },
+                    {
+                        "name": "guestQuantity",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "adults": {
+                                    "type": "integer",
+                                    "default": 1
+                                },
+                                "children": {
+                                    "type": "integer",
+                                    "default": 0
+                                }
+                            }
+                        },
+                        "description": "Filter by guest quantity. Default is 1 adult and 0 children."
+                    },
+                    {
+                        "name": "mealPlan",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": ["BB", "HB", "FB", "AI"],
+                            "nullable": true
+                        },
+                        "description": "Filter by meal plan. Null for any, predefined values are BB, HB, FB, AI."
+                    },
+                    {
+                        "name": "tourType",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": ["RESORT", "CRUISE", "HIKE"]
+                        },
+                        "description": "Filter by tour type. Options are RESORT (Resorts), CRUISE (Cruises), HIKE (Hikes)."
+                    },
+                    {
+                        "name": "sortBy",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": ["RATING_DESC", "RATING_ASC", "PRICE_DESC", "PRICE_ASC"],
+                            "default": "RATING_DESC"
+                        },
+                        "description": "Sort by RATING_DESC (Top rated first), RATING_ASC (Low rated first), PRICE_DESC (Highest price first), or PRICE_ASC (Lowest price first). Default is RATING_DESC."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A paginated list of available tours",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TourListResponseDTO"
+                                },
+                                "example": {
+                                    "tours": [
+                                        {
+                                            "id": "123e4567-e89b-12d3-a456-426614174000",
+                                            "name": "Garden Resort & Spa",
+                                            "destination": "Punta Cana, Dominican Republic",
+                                            "startDate": "2025-01-04",
+                                            "durations": ["7 days", "10 days", "12 days"],
+                                            "mealPlans": ["Breakfast (BB)", "Half-board (HB)", "Full-board (FB)", "All inclusive (AI)"],
+                                            "price": "from $1400 for 1 person",
+                                            "rating": 5.0,
+                                            "reviews": 19,
+                                            "freeCancelation": "2024-12-25"
+                                        }
+                                    ],
+                                    "page": 1,
+                                    "pageSize": 6,
+                                    "totalPages": 1,
+                                    "totalItems": 1
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/tours/{id}": {
+            "get": {
+                "tags": ["Tours"],
+                "summary": "Get detailed information on a selected tour (User Story 5)",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "The unique identifier of the tour"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detailed information about the selected tour",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TourDetailsDTO"
+                                },
+                                "example": {
+                                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                                    "name": "Dolomites: 7-day guided hike",
+                                    "destination": "Dolomites Mountains, Italy",
+                                    "rating": 4.73,
+                                    "imageUrls": [
+                                        "https://example.com/image1.jpg",
+                                        "https://example.com/image2.jpg"
+                                    ],
+                                    "summary": "Experience the excitement of 7 days among the wonders of the Brenta Dolomites! Unforgettable excursions, breathtaking views, 7 days of adventure in a paradise.",
+                                    "freeCancelationDaysBefore": 10,
+                                    "durations": ["7 days"],
+                                    "accomodiation": "During your hike in Dolomites, you will be accomodated in mountain huts. The tour package includes stays in shared dormitory-style rooms. Solo travelers will be placed with another traveler of the same gender, as indicated by the gender marker on their passports.",
+                                    "hotelName": null,
+                                    "hotelDescription": null,
+                                    "mealPlans": ["Breakfast (BB)", "Half-board (HB)", "Full-board (FB)"],
+                                    "customDetails": {
+                                        "Tourguide": "English, Italian",
+                                        "Transfer": "Organized transfer from Milan airport.",
+                                        "Small group": "Maximum number of participants: 8"
+                                    },
+                                    "startDates": ["2025-01-15", "2025-01-22", "2025-01-29"],
+                                    "guestQuantity": {
+                                        "adultsMaxValue": 8,
+                                        "childrenMaxValue": 0,
+                                        "totalMaxVelue": 8
+                                    },
+                                    "price": {
+                                        "7 days": "$1400"
+                                    },
+                                    "mealSupplementsPerDay": {
+                                        "BB": "$0",
+                                        "HB": "$25",
+                                        "FB": "$40"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/tours/{id}/reviews": {
+            "get": {
+                "tags": ["Tours"],
+                "summary": "Get customer reviews for a specific tour (User Story 5)",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "The unique identifier of the tour"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "minimum": 1
+                        },
+                        "description": "The page number to retrieve. Default is 1."
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 4,
+                            "minimum": 1
+                        },
+                        "description": "The number of items per page. Default is 4."
+                    },
+                    {
+                        "name": "sortBy",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": ["RATING_DESC", "RATING_ASC", "NEWEST", "OLDEST"],
+                            "default": "RATING_DESC"
+                        },
+                        "description": "Sort by RATING_DESC (Top rated first), RATING_ASC (Low rated first), NEWEST (Newest first), or OLDEST (Oldest first). Default is RATING_DESC."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A paginated list of customer reviews for the tour",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ReviewListResponseDTO"
+                                },
+                                "example": {
+                                    "reviews": [
+                                        {
+                                            "authorName": "David",
+                                            "authorImageUrl": "https://example.com/author1.jpg",
+                                            "createdAt": "2024-06-06",
+                                            "rate": 5,
+                                            "reviewContent": "Incredible experience! The huts were cozy, and hiking the Brenta Dolomites was beyond breathtaking. Highly recommended for adventure seekers!"
+                                        }
+                                    ],
+                                    "page": 1,
+                                    "pageSize": 4,
+                                    "totalPages": 1,
+                                    "totalItems": 1
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/bookings": {
+            "post": {
+                "tags": ["Bookings"],
+                "summary": "Create a new tour booking (User Story 6)",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateBookingRequestDetailsDTO"
+                            },
+                            "example": {
+                                "userId": "123e4567-e89b-12d3-a456-426614174000",
+                                "tourId": "123e4567-e89b-12d3-a456-426614174001",
+                                "date": "2025-01-15",
+                                "duration": "7 days",
+                                "mealPlan": "BB",
+                                "guests": { "adult": 1, "children": 0 },
+                                "personalDetails": [
+                                    { "firstName": "Jhonson", "lastName": "Doe" },
+                                    { "firstName": "Ann", "lastName": "Doe" }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Booking created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreateBookingResponseDetailsDTO"
+                                },
+                                "example": {
+                                    "freeCancelation": "2025-01-05",
+                                    "details": "You have booked at Tropical Caribe Hotel, starting date January 15, 2025 (7 days), Breakfast (BB) for 1 adult successfully. Please upload your travel documents to the booking on the 'My Tours' page and wait for the Travel Agent to contact you."
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "get": {
+                "tags": ["Bookings"],
+                "summary": "Get a list of bookings for a specific user  (User Story 6, User Story 2)",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "The unique identifier of the user"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of bookings for the user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BookedTourListResponseDTO"
+                                },
+                                "example": {
+                                    "bookings": [
+                                        {
+                                            "id": "123e4567-e89b-12d3-a456-426614174000",
+                                            "state": "BOOKED",
+                                            "tourImageUrl": "https://example.com/tour-image.jpg",
+                                            "name": "Tropical Caribe",
+                                            "destination": "Punta Cana, Dominican Republic",
+                                            "tourDetails": {
+                                                "date": "Jan 17, 2025 (7 days)",
+                                                "mealPlan": "Breakfast (BB)",
+                                                "guests": "Jhonson Doe (1 adult)",
+                                                "totalPrice": "$1400",
+                                                "documents": "0 items"
+                                            },
+                                            "travelAgent": {
+                                                "name": "Tyrone Boyer",
+                                                "email": "tyroneboyer@gmail.com",
+                                                "phone": "480-221-1885",
+                                                "messenger": "https://example.com/messenger-link"
+                                            },
+                                            "canceledBy": null,
+                                            "cancelReason": null
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "SignUpRequestDTO": {
+                "type": "object",
+                "properties": {
+                    "firstName": {
+                        "type": "string"
+                    },
+                    "lastName": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password"
+                    }
+                },
+                "required": ["firstName", "lastName", "email", "password"]
+            },
+            "SignUpResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "description": "Confirmation message for successful sign-up"
+                    }
+                },
+                "required": ["message"]
+            },
+            "SignInRequestDTO": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password"
+                    }
+                },
+                "required": ["email", "password"]
+            },
+            "SignInResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "idToken": {
+                        "type": "string",
+                        "description": "JWT token for session management"
+                    },
+                    "role": {
+                        "type": "string",
+                        "description": "Role of the user",
+                        "enum": ["CUSTOMER", "TRAVEL_AGENT", "ADMIN"]
+                    },
+                    "userName": {
+                        "type": "string",
+                        "description": "Full name of the user"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "description": "Email address of the user"
+                    }
+                },
+                "required": ["idToken", "role", "userName", "email"]
+            },
+            "DestinationListResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "destinations": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "List of destinations matching the query"
+                    }
+                },
+                "required": ["destinations"]
+            },
+            "TourListResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "tours": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "Unique identifier for the tour"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "Name of the tour"
+                                },
+                                "destination": {
+                                    "type": "string",
+                                    "description": "Destination of the tour"
+                                },
+                                "startDate": {
+                                    "type": "string",
+                                    "format": "date",
+                                    "description": "Start date of the tour"
+                                },
+                                "durations": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Available durations for the tour"
+                                },
+                                "mealPlans": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Available meal plans for the tour"
+                                },
+                                "price": {
+                                    "type": "string",
+                                    "description": "Price information for the tour"
+                                },
+                                "rating": {
+                                    "type": "number",
+                                    "description": "Rating of the tour"
+                                },
+                                "reviews": {
+                                    "type": "integer",
+                                    "description": "Number of reviews for the tour"
+                                },
+                                "freeCancelation": {
+                                    "type": "string",
+                                    "format": "date",
+                                    "description": "Date until which free cancellation is available"
+                                }
+                            },
+                            "required": ["id", "name", "destination", "startDate", "durations", "mealPlans", "price", "rating", "reviews"]
+                        },
+                        "description": "List of tours"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "description": "Current page number"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "description": "Number of items per page"
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "description": "Total number of pages"
+                    },
+                    "totalItems": {
+                        "type": "integer",
+                        "description": "Total number of items"
+                    }
+                },
+                "required": ["tours", "page", "pageSize", "totalPages", "totalItems"]
+            },
+            "TourDetailsDTO": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the tour"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the tour"
+                    },
+                    "destination": {
+                        "type": "string",
+                        "description": "Destination of the tour"
+                    },
+                    "rating": {
+                        "type": "number",
+                        "description": "Rating of the tour"
+                    },
+                    "imageUrls": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "URLs of images related to the tour"
+                    },
+                    "summary": {
+                        "type": "string",
+                        "description": "Summary of the tour"
+                    },
+                    "freeCancelationDaysBefore": {
+                        "type": "integer",
+                        "description": "Number of days before the start date for free cancellation"
+                    },
+                    "durations": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Available durations for the tour"
+                    },
+                    "accomodiation": {
+                        "type": "string",
+                        "description": "Accommodation details for the tour"
+                    },
+                    "hotelName": {
+                        "type": ["string", "null"],
+                        "description": "Name of the hotel (if applicable)"
+                    },
+                    "hotelDescription": {
+                        "type": ["string", "null"],
+                        "description": "Description of the hotel (if applicable)"
+                    },
+                    "mealPlans": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Available meal plans for the tour"
+                    },
+                    "customDetails": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        },
+                        "description": "Custom details about the tour"
+                    },
+                    "startDates": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "description": "Available start dates for the tour"
+                    },
+                    "guestQuantity": {
+                        "type": "object",
+                        "properties": {
+                            "adultsMaxValue": {
+                                "type": "integer",
+                                "description": "Maximum number of adults allowed"
+                            },
+                            "childrenMaxValue": {
+                                "type": "integer",
+                                "description": "Maximum number of children allowed"
+                            },
+                            "totalMaxVelue": {
+                                "type": "integer",
+                                "description": "Maximum total number of guests allowed"
+                            }
+                        },
+                        "description": "Guest quantity details"
+                    },
+                    "price": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        },
+                        "description": "Price details for the tour"
+                    },
+                    "mealSupplementsPerDay": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        },
+                        "description": "Meal supplement costs per day"
+                    }
+                },
+                "required": ["id", "name", "destination", "rating", "imageUrls", "summary", "freeCancelationDaysBefore", "durations", "accomodiation", "mealPlans", "customDetails", "startDates", "guestQuantity", "price", "mealSupplementsPerDay"]
+            },
+            "ReviewListResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "reviews": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "authorName": {
+                                    "type": "string",
+                                    "description": "Name of the review author"
+                                },
+                                "authorImageUrl": {
+                                    "type": "string",
+                                    "description": "URL of the author's image"
+                                },
+                                "createdAt": {
+                                    "type": "string",
+                                    "format": "date",
+                                    "description": "Date when the review was created"
+                                },
+                                "rate": {
+                                    "type": "integer",
+                                    "description": "Rating given by the author"
+                                },
+                                "reviewContent": {
+                                    "type": "string",
+                                    "description": "Content of the review"
+                                }
+                            },
+                            "required": ["authorName", "createdAt", "rate", "reviewContent"]
+                        },
+                        "description": "List of reviews"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "description": "Current page number"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "description": "Number of items per page"
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "description": "Total number of pages"
+                    },
+                    "totalItems": {
+                        "type": "integer",
+                        "description": "Total number of items"
+                    }
+                },
+                "required": ["reviews", "page", "pageSize", "totalPages", "totalItems"]
+            },
+            "CreateBookingRequestDetailsDTO": {
+                "type": "object",
+                "properties": {
+                    "userId": {
+                        "type": "string",
+                        "description": "Unique identifier for the user"
+                    },
+                    "tourId": {
+                        "type": "string",
+                        "description": "Unique identifier for the tour"
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Date of the booking"
+                    },
+                    "duration": {
+                        "type": "string",
+                        "description": "Duration of the tour"
+                    },
+                    "mealPlan": {
+                        "type": "string",
+                        "description": "Selected meal plan"
+                    },
+                    "guests": {
+                        "type": "object",
+                        "properties": {
+                            "adult": {
+                                "type": "integer",
+                                "description": "Number of adults"
+                            },
+                            "children": {
+                                "type": "integer",
+                                "description": "Number of children"
+                            }
+                        },
+                        "description": "Guest details"
+                    },
+                    "personalDetails": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "firstName": {
+                                    "type": "string",
+                                    "description": "First name of the guest"
+                                },
+                                "lastName": {
+                                    "type": "string",
+                                    "description": "Last name of the guest"
+                                }
+                            },
+                            "required": ["firstName", "lastName"]
+                        },
+                        "description": "Personal details of the guests"
+                    }
+                },
+                "required": ["userId", "tourId", "date", "duration", "mealPlan", "guests", "personalDetails"]
+            },
+            "CreateBookingResponseDetailsDTO": {
+                "type": "object",
+                "properties": {
+                    "freeCancelation": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Date until which free cancellation is available"
+                    },
+                    "details": {
+                        "type": "string",
+                        "description": "Details of the booking confirmation"
+                    }
+                },
+                "required": ["freeCancelation", "details"]
+            },
+            "BookedTourListResponseDTO": {
+                "type": "object",
+                "properties": {
+                    "bookings": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "Unique identifier for the booking"
+                                },
+                                "state": {
+                                    "type": "string",
+                                    "description": "State of the booking"
+                                },
+                                "tourImageUrl": {
+                                    "type": "string",
+                                    "description": "URL of the tour image"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "Name of the tour"
+                                },
+                                "destination": {
+                                    "type": "string",
+                                    "description": "Destination of the tour"
+                                },
+                                "tourDetails": {
+                                    "type": "object",
+                                    "properties": {
+                                        "date": {
+                                            "type": "string",
+                                            "description": "Date and duration of the tour"
+                                        },
+                                        "mealPlan": {
+                                            "type": "string",
+                                            "description": "Selected meal plan"
+                                        },
+                                        "guests": {
+                                            "type": "string",
+                                            "description": "Guest details"
+                                        },
+                                        "totalPrice": {
+                                            "type": "string",
+                                            "description": "Total price of the booking"
+                                        },
+                                        "documents": {
+                                            "type": "string",
+                                            "description": "Number of documents uploaded"
+                                        }
+                                    },
+                                    "required": ["date", "mealPlan", "guests", "totalPrice", "documents"]
+                                },
+                                "travelAgent": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of the travel agent"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "description": "Email of the travel agent"
+                                        },
+                                        "phone": {
+                                            "type": "string",
+                                            "description": "Phone number of the travel agent"
+                                        },
+                                        "messenger": {
+                                            "type": "string",
+                                            "description": "Messenger link for the travel agent"
+                                        }
+                                    },
+                                    "required": ["name", "email", "phone", "messenger"]
+                                },
+                                "canceledBy": {
+                                    "type": ["string", "null"],
+                                    "description": "Who canceled the booking"
+                                },
+                                "cancelReason": {
+                                    "type": ["string", "null"],
+                                    "description": "Reason for cancellation"
+                                }
+                            },
+                            "required": ["id", "state", "tourImageUrl", "name", "destination", "tourDetails", "travelAgent"]
+                        },
+                        "description": "List of bookings"
+                    }
+                },
+                "required": ["bookings"]
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "in": "header",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}

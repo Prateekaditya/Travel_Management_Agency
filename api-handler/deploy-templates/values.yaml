@@ -1,0 +1,170 @@
+replicaCount: 1
+
+image:
+  repository: api-handler
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets:
+  - name: regcred
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  dnsWildcard: development.krci-dev.cloudmentor.academy
+  className: "nginx"
+  annotations:
+    # CORS is handled by Spring Security corsConfigurationSource — do NOT add nginx CORS
+    # annotations here or the browser will see duplicate Access-Control-Allow-Origin headers.
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "10"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+  hosts:
+    - host: edpDefault
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 768Mi
+
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8080
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8080
+  initialDelaySeconds: 40
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+volumes: []
+volumeMounts: []
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+env:
+  extraEnv:
+    - name: MONGO_URI
+      valueFrom:
+        secretKeyRef:
+          name: run23team1-secret
+          key: mongo-uri
+
+    - name: JWT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: run23team1-secret
+          key: jwt-secret
+
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: run23team1-secret
+          key: aws-access-key-id
+
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: run23team1-secret
+          key: aws-secret-access-key
+
+    - name: AWS_SESSION_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: run23team1-secret
+          key: aws-session-token
+
+    - name: AWS_ROLE_ARN
+      valueFrom:
+        secretKeyRef:
+          name: run23team1-secret
+          key: aws-role-arn
+
+    - name: AWS_REGION
+      value: "eu-west-1"
+
+    - name: AWS_S3_BUCKET
+      value: "run23-team1-travel-agency-docs-dev"
+
+    - name: AWS_S3_PREFIX
+      value: "bookings"
+
+    - name: SES_FROM_EMAIL
+      valueFrom:
+        secretKeyRef:
+          name: run23team1-secret
+          key: ses-from-email
+
+    - name: FRONTEND_URL
+      valueFrom:
+        secretKeyRef:
+          name: run23team1-secret
+          key: frontend-url
+
+    - name: RABBITMQ_HOST
+      value: "rabbitmq.run23-team1-rabbit-develop.svc.cluster.local"
+
+    - name: RABBITMQ_PORT
+      value: "5672"
+
+    - name: RABBITMQ_VHOST
+      value: "/"
+
+    - name: RABBITMQ_EXCHANGE
+      value: "bookings"
+
+    - name: RABBITMQ_ROUTING_KEY
+      value: "booking.state.changed"
+
+    - name: RABBITMQ_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: run23team1-secret
+          key: rabbitmq-username
+
+    - name: RABBITMQ_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: run23team1-secret
+          key: rabbitmq-password

@@ -1,0 +1,355 @@
+.signin-page-shell {
+  @apply min-h-svh flex flex-col items-center justify-center;
+  padding: clamp(32px, 4vw, 56px) clamp(16px, 2.8vw, 24px) clamp(16px, 2.8vw, 24px);
+  background:
+    radial-gradient(circle at top left, rgba(2, 126, 172, 0.12), transparent 28%),
+    linear-gradient(180deg, #eefcff 0%, #e7f9ff 100%);
+  transition: padding 240ms ease, background 240ms ease;
+}
+
+.signin-layout {
+  @apply w-full mx-auto grid items-stretch;
+  max-width: 1180px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(14px, 1.6vw, 24px);
+  transition: gap 240ms ease;
+}
+
+.signin-card {
+  @apply overflow-hidden rounded-[32px];
+  box-shadow: 0 2px 10px 6px rgba(2, 126, 172, 0.2);
+  transition: border-radius 240ms ease, transform 240ms ease, box-shadow 240ms ease, min-height 240ms ease;
+}
+
+.signin-form-card {
+  @apply flex bg-white items-center justify-center;
+  min-height: 760px;
+}
+
+.signin-form {
+  @apply mx-auto flex flex-col;
+  width: min(100%, 468px);
+  padding: clamp(20px, 3vw, 36px) clamp(18px, 3vw, 42px);
+  gap: 20px;
+  transition: padding 240ms ease, gap 240ms ease;
+}
+
+.signin-form-header {
+  @apply flex flex-col;
+  gap: 2px;
+}
+
+.signin-eyebrow {
+  @apply m-0 uppercase tracking-[0.04em] text-[#0b3857];
+  font-size: 14px;
+  line-height: 24px;
+  font-weight: 300;
+}
+
+.signin-form-header h1 {
+  @apply m-0 font-bold text-[#0b3857];
+  font-size: 24px;
+  line-height: 40px;
+}
+
+.signin-fields {
+  @apply flex flex-col gap-3;
+}
+
+.signin-field {
+  @apply flex flex-col gap-1;
+}
+
+.signin-field label {
+  @apply text-[#0b3857];
+  font-size: 14px;
+  line-height: 24px;
+  font-weight: 800;
+}
+
+.signin-field input {
+  @apply w-full rounded-[8px] border border-[#d3e1ed] bg-white text-[#0b3857];
+  height: 46px;
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 24px;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.signin-field input::placeholder {
+  @apply text-[#a2aeb9];
+}
+
+.signin-field input:focus {
+  @apply outline-none border-[#027eac];
+  box-shadow: 0 0 0 4px rgba(2, 126, 172, 0.12);
+}
+
+.signin-field input:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.signin-helper-text {
+  @apply m-0 text-[#677883];
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.signin-helper-text-error {
+  @apply text-[#c34d4d];
+}
+
+.signin-input-with-action {
+  @apply relative;
+}
+
+.signin-input-with-action input {
+  padding-right: 56px;
+}
+
+.signin-input-action {
+  @apply absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center cursor-pointer rounded-full border-0 bg-transparent text-[#0b3857];
+  width: 40px;
+  height: 40px;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.signin-input-action:hover {
+  background: rgba(2, 126, 172, 0.08);
+}
+
+.signin-input-action:focus-visible {
+  outline: 2px solid rgba(2, 126, 172, 0.28);
+  outline-offset: 2px;
+}
+
+.signin-eye-icon {
+  @apply w-[22px] h-[22px];
+}
+
+.signin-lock-error {
+  @apply rounded-[8px] text-[#c34d4d];
+  background: rgba(195, 77, 77, 0.08);
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.signin-form-actions {
+  @apply flex flex-col gap-3;
+}
+
+.signin-forgot-link {
+  @apply self-start text-[#027eac] underline underline-offset-2;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.signin-submit-button {
+  @apply w-full cursor-pointer rounded-[8px] border-0 bg-[#027eac] text-white font-bold;
+  min-height: 48px;
+  font-size: 14px;
+  line-height: 24px;
+  transition: background-color 180ms ease, opacity 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.signin-submit-button:hover:not(:disabled) {
+  @apply bg-[#0b6a95] -translate-y-px;
+  box-shadow: 0 10px 24px rgba(2, 126, 172, 0.18);
+}
+
+.signin-submit-button:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.signin-register-copy {
+  @apply m-0 text-[#0b3857];
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.signin-register-copy a {
+  @apply text-[#027eac] underline underline-offset-2;
+}
+
+/* ── "or continue with" divider ── */
+.signin-divider {
+  @apply relative flex items-center;
+  margin: 2px 0;
+}
+
+.signin-divider::before,
+.signin-divider::after {
+  content: '';
+  @apply flex-1 border-t border-[#d3e1ed];
+}
+
+.signin-divider-text {
+  @apply px-3 text-[#677883];
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+/* ── Google login button ── */
+.signin-google-button {
+  @apply w-full flex items-center justify-center gap-3 cursor-pointer rounded-[8px] bg-white text-[#0b3857] font-semibold;
+  min-height: 48px;
+  font-size: 14px;
+  line-height: 24px;
+  border: 1.5px solid #d3e1ed;
+  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.signin-google-button:hover {
+  border-color: #027eac;
+  background-color: rgba(2, 126, 172, 0.04);
+  box-shadow: 0 2px 8px rgba(2, 126, 172, 0.1);
+  transform: translateY(-1px);
+}
+
+.signin-google-button:active {
+  transform: translateY(0);
+}
+
+.signin-google-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Hero panel */
+.signin-visual-card {
+  @apply relative isolate bg-[#a4ddf2];
+  min-height: 760px;
+}
+
+.signin-visual-image {
+  @apply absolute inset-0 h-full w-full object-cover;
+}
+
+.signin-visual-overlay {
+  @apply relative flex h-full flex-col justify-between;
+  z-index: 1;
+  min-height: 760px;
+  padding: 28px;
+  transition: padding 240ms ease;
+}
+
+.signin-brand {
+  @apply inline-flex items-center;
+}
+
+.signin-brand-logo {
+  @apply block h-auto;
+  width: clamp(160px, 18vw, 260px);
+}
+
+.signin-visual-title {
+  @apply m-0 text-[#0b3857];
+  max-width: 431px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 64px;
+  line-height: 1;
+  letter-spacing: 0;
+  margin-left: 12px;
+}
+
+/* Responsive */
+@media (max-width: 1180px) {
+  .signin-layout {
+    grid-template-columns: 1.05fr 0.95fr;
+  }
+
+  .signin-form-card,
+  .signin-visual-card,
+  .signin-visual-overlay {
+    min-height: 720px;
+  }
+}
+
+@media (max-width: 980px) {
+  .signin-layout {
+    @apply grid-cols-1;
+  }
+
+  .signin-visual-card {
+    order: -1;
+    min-height: 340px;
+  }
+
+  .signin-form-card {
+    min-height: 340px;
+  }
+
+  .signin-visual-overlay {
+    min-height: 340px;
+    padding: 22px;
+  }
+
+  .signin-visual-title {
+    max-width: 340px;
+  }
+
+  .signin-form {
+    @apply w-full;
+    max-width: 560px;
+  }
+}
+
+@media (max-width: 640px) {
+  .signin-page-shell {
+    @apply p-3;
+  }
+
+  .signin-card {
+    @apply rounded-3xl;
+  }
+
+  .signin-form {
+    gap: 28px;
+    padding: 24px 18px;
+  }
+
+  .signin-form-header h1 {
+    font-size: 22px;
+    line-height: 1.35;
+  }
+
+  .signin-visual-card {
+    min-height: 260px;
+  }
+
+  .signin-form-card {
+    min-height: 260px;
+  }
+
+  .signin-visual-overlay {
+    min-height: 260px;
+    padding: 16px;
+  }
+
+  .signin-brand-logo {
+    width: clamp(120px, 14vw, 180px);
+  }
+
+  .signin-visual-title {
+    max-width: 240px;
+    font-size: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signin-page-shell,
+  .signin-layout,
+  .signin-card,
+  .signin-form,
+  .signin-visual-overlay,
+  .signin-visual-title,
+  .signin-field input,
+  .signin-input-action,
+  .signin-submit-button {
+    transition: none;
+  }
+}

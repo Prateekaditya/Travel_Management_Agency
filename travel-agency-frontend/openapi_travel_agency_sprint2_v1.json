@@ -1,0 +1,1647 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "OpenAPI Travel Agency (Sprint 2)",
+    "version": "1.0"
+  },
+  "servers": [
+      {
+        "url": "http://localhost:8080/api/v1",
+        "description": "local development"
+      },
+    {
+        "url": "{protocol}://{host}:{port}/{basePath}",
+        "description": "custom server",
+        "variables": {
+          "protocol": {
+            "enum": ["http", "https"],
+            "default": "https",
+            "description": "The protocol to use"
+          },
+          "host": {
+            "default": "api.example.com",
+            "description": "The host name or IP address"
+          },
+          "port": {
+            "enum": ["80", "443", "8080", "8443"],
+            "default": "443",
+            "description": "The port number"
+          },
+      "basePath": {
+            "default": "api/v1",
+            "description": "Api version"
+          }
+        }
+      }
+    ],
+  "tags": [
+    {
+      "name": "Bookings",
+      "description": "Endpoints related to booking management."
+    },
+    {
+      "name": "Tours",
+      "description": "Endpoints related to tour management."
+    },
+    {
+      "name": "Reports",
+      "description": "Endpoints related to report generation and management."
+    },
+    {
+      "name": "Users",
+      "description": "Endpoints related to user management."
+    },
+    {
+      "name": "Auth",
+      "description": "Endpoints related to authentication and authorization."
+    }
+  ],
+  "paths": {
+    "/bookings/{id}/documents": {
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "Upload documents for a booking (User Story 7, Optional)",
+        "description": "This endpoint allows customers to upload payment receipts and guest documents for a specific booking.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadDocumentsRequestDTO"
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "payments": [
+                      {
+                        "fileName": "Payment receipt 1.pdf",
+                        "type": "pdf",
+                        "base64encodedDocument": "JVBERi0xLjUKJcTl8uXr..."
+                      }
+                    ],
+                    "guestDocuments": [
+                      {
+                        "userName": "Jhon Doe",
+                        "documents": [
+                          {
+                            "fileName": "Passport.pdf",
+                            "type": "pdf",
+                            "base64encodedDocument": "JVBERi0xLjUKJcTl8uXr..."
+                          },
+                          {
+                            "fileName": "Driver license.pdf",
+                            "type": "pdf",
+                            "base64encodedDocument": "JVBERi0xLjUKJcTl8uXr..."
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documents uploaded successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Documents uploaded successfully."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Bookings"],
+        "summary": "Retrieve documents for a booking (User Story 7, Optional)",
+        "description": "This endpoint allows customers to retrieve payment receipts and guest documents for a specific booking.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documents retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetrieveDocumentsResponseDTO"
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "payments": [
+                        {
+                          "id": "uuid",
+                          "fileName": "Payment receipt 1.pdf"
+                        }
+                      ],
+                      "guestDocuments": [
+                        {
+                          "userName": "Jhon Doe",
+                          "documents": [
+                            {
+                              "id": "uuid",
+                              "fileName": "Passport.pdf"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/{id}/documents/{documentId}": {
+      "delete": {
+        "tags": ["Bookings"],
+        "summary": "Delete a document for a booking (User Story 7, Optional)",
+        "description": "This endpoint allows customers to delete a specific document for a booking.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document deleted successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Document deleted successfully."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings": {
+      "get": {
+        "tags": ["Bookings"],
+        "summary": "Retrieve bookings for a user or travel agent (User Story 8)",
+        "description": "This endpoint retrieves bookings for a user or travel agent. Returns an updated BookedTourListResponseDTO with a new field 'customerDetails' added to the previous Sprint 1 specification.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The ID of the user whose bookings are to be retrieved. Required if agentId is not specified."
+          },
+          {
+            "name": "agentId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The ID of the travel agent whose assigned bookings are to be retrieved. Required if userId is not specified."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bookings retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookedTourListResponseDTO"
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "bookings": [
+                        {
+                          "id": "123e4567-e89b-12d3-a456-426614174000",
+                          "state": "BOOKED",
+                          "tourImageUrl": "https://example.com/tour-image.jpg",
+                          "name": "Tropical Caribe",
+                          "destination": "Punta Cana, Dominican Republic",
+                          "tourDetails": {
+                            "date": "Jan 17, 2025 (7 days)",
+                            "mealPlan": "Breakfast (BB)",
+                            "guests": "Jhonson Doe (1 adult)",
+                            "totalPrice": "$1400",
+                            "documents": "0 items"
+                          },
+                          "travelAgent": {
+                            "name": "Tyrone Boyer",
+                            "email": "tyroneboyer@gmail.com",
+                            "phone": "480-221-1885",
+                            "messenger": "https://example.com/messenger-link"
+                          },
+                          "customerDetails": {
+                            "name": "Johnson Doe (1 adult)",
+                            "email": "johnsondoe@nomail.com",
+                            "phone": "555-111-2233",
+                            "documents": {
+                              "payments": [
+                                {
+                                  "fileUrl": "https://travel-agency-app.s3.amazonaws.com/bookings/e9152927-9057-46c0-89cf-2b3b014581e7/Payment_receipt_1.pdf"
+                                }
+                              ],
+                              "guestDocuments": [
+                                {
+                                  "userName": "Johnson Doe",
+                                  "documents": [
+                                    {
+                                      "fileName": "Passport",
+                                      "fileUrl": "https://travel-agency-app.s3.amazonaws.com/bookings/e9152927-9057-46c0-89cf-2b3b014581e7/Passport.pdf"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          },
+                          "canceledBy": null,
+                          "cancelReason": null
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. Either 'userId' or 'agentId' must be specified.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Either 'userId' or 'agentId' must be specified."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/{id}/confirm": {
+      "post": {
+        "tags": ["Bookings"],
+        "summary": "Confirm booking documents (User Story 8)",
+        "description": "This endpoint allows a travel agent to confirm all documents provided by the customer and mark the booking as 'Confirmed'.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booking confirmed successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Booking confirmed successfully."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/{id}/cancel": {
+      "delete": {
+        "tags": ["Bookings"],
+        "summary": "Cancel a booking (User Story 8)",
+        "description": "This endpoint allows a travel agent to cancel a scheduled tour for significant reasons.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cancellationReason": {
+                    "type": "string",
+                    "enum": ["CUSTOMERS_EMERGENCY", "HOTEL_EMERGENCY", "SAFETY_CONCERNS", "INSUFFICIENT_BOOKINGS"],
+                    "description": "The reason for cancellation."
+                  },
+                  "comment": {
+                    "type": "string",
+                    "description": "Additional comments about the cancellation."
+                  }
+                },
+                "required": ["cancellationReason"]
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "cancellationReason": "CUSTOMERS_EMERGENCY",
+                    "comment": "Cancelled at client's request."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Booking canceled successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Booking canceled successfully."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tours/{id}/feedbacks": {
+      "post": {
+        "tags": ["Tours"],
+        "summary": "Submit feedback for a tour (User Story 9)",
+        "description": "This endpoint allows users to submit feedback for a specific tour. The user is resolved by extracting their ID from the 'sub' claim in the JWT token provided in the 'id_token'.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TourFeedbackRequestDTO"
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "rating": 5,
+                    "comment": "Amazing experience! Highly recommend."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Feedback submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Your feedback has been submitted."
+                    }
+                  }
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "message": "Your feedback has been submitted."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get user info (User Story 12, Optional)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDTO"
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "firstName": "Jhonson",
+                      "lastName": "Doe",
+                      "imageUrl": "example",
+                      "role": "CUSTOMER"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/name": {
+      "put": {
+        "tags": ["Users"],
+        "summary": "Change First and Last Name (User Story 12, Optional)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserNameRequestDTO"
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "firstName": "John",
+                    "lastName": "Smith"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User name updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateNameResponseDTO"
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "message": "Your account has been updated successfully"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/image": {
+      "put": {
+        "tags": ["Users"],
+        "summary": "Upload Avatar (User Story 12, Optional)",
+        "description": "Upload a user avatar as a Base64 encoded string.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserImageRequestDTO"
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "imageBase64": "iVBORw0KGgoAAAANSUhEUgAAAAUA..."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Avatar uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateImageResponseDTO"
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "message": "Your account has been updated successfully"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/password": {
+      "put": {
+        "tags": ["Users"],
+        "summary": "Password Change (User Story 12, Optional)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePasswordRequestDTO"
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "currentPassword": "oldPassword123",
+                    "newPassword": "newPassword456"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdatePasswordResponseDTO"
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "message": "Your password has been updated successfully"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/email": {
+      "put": {
+        "tags": ["Users"],
+        "summary": "Change Email (User Story 12, Optional)",
+        "description": "This endpoint does not change the email directly but sends a confirmation link to the new email address.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeEmailRequestDTO"
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "newEmail": "johnson_doe@nomail.com",
+                    "password": "userPassword123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Confirmation link sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeEmailResponseDTO"
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "message": "A confirmation link has been sent to your new email address."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/email/confirm": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Confirm Email Change (User Story 12, Optional)",
+        "description": "This endpoint confirms the email change using a token sent to the new email address. The link in the email redirects the user to the frontend, which extracts the token and triggers this backend endpoint.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "confirmationToken": {
+                    "type": "string",
+                    "description": "The token sent to the new email address for confirmation."
+                  }
+                },
+                "required": ["confirmationToken"]
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "confirmationToken": "uniqueConfirmationToken123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email change confirmed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Your email has been changed successfully."
+                    }
+                  }
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "message": "Your email has been successfully updated."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Password Recovery (User Story 13, Optional)",
+        "description": "This endpoint sends a verification code to the user's email for password recovery.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                },
+                "required": ["email"]
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "email": "user@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verification code sent to email.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "message": "Verification code sent to email."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Email not found.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "error": "Email not found."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to send verification code.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "error": "Failed to send verification code. Please try again later."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/verify-code": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Enter Verification Code (User Story 13, Optional)",
+        "description": "This endpoint validates the verification code sent to the user's email.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "verificationCode": {
+                    "type": "string"
+                  }
+                },
+                "required": ["email", "verificationCode"]
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "email": "user@example.com",
+                    "verificationCode": "123456"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verification code validated successfully.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "message": "Verification code validated successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid verification code.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "error": "Invalid verification code."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Email not found.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "error": "Email not found."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to validate verification code.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "error": "Failed to validate verification code. Please try again later."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Enter New Password (User Story 13, Optional)",
+        "description": "This endpoint allows the user to reset their password using the verification code.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "verificationCode": {
+                    "type": "string"
+                  },
+                  "newPassword": {
+                    "type": "string"
+                  }
+                },
+                "required": ["email", "verificationCode", "newPassword"]
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "email": "user@example.com",
+                    "verificationCode": "123456",
+                    "newPassword": "NewSecurePassword123!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successfully.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "message": "Password reset successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid verification code.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "error": "Invalid verification code."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Email not found.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "error": "Email not found."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to reset password.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "error": "Failed to reset password. Please try again later."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/generate": {
+      "post": {
+        "tags": ["Reports"],
+        "summary": "Generate Report (User Story 11, Optional)",
+        "description": "Generates report data based on the user's input and returns the data in JSON format.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateReportRequestDTO"
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "reportType": "STAFF_PERFORMANCE",
+                    "startDate": "2025-01-15",
+                    "endDate": "2025-01-22",
+                    "location": "Ao Nang, Thailand"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Report generated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateReportResponseDTO"
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "cachedReportKey": "abc123",
+                      "reportType": "STAFF_PERFORMANCE",
+                      "reportData": {
+                        "columns": [
+                          "Travel Agent",
+                          "TA e-mail",
+                          "Report period start",
+                          "Report period end",
+                          "Tours sold",
+                          "Delta of tours sold to previous period %",
+                          "Average Feedback rate for Travel experience (1 to 5)",
+                          "Minimum Feedback rate for Travel experience (1 to 5)",
+                          "Delta of Average Feedback rate for Travel experience to previous period %",
+                          "Revenue for tours finished within reported period (USD)",
+                          "Delta of revenue for tours finished to previous period %"
+                        ],
+                        "rows": [
+                          [
+                            "Diana Rossi",
+                            "DiRossi@sparkl.com",
+                            "15.01.2025",
+                            "22.01.2025",
+                            128,
+                            "-4%",
+                            3.7,
+                            2,
+                            "-10%",
+                            229120,
+                            "-3%"
+                          ],
+                          [
+                            "Lola Diaz",
+                            "LolaDiaz@sparkl.com",
+                            "15.01.2025",
+                            "22.01.2025",
+                            130,
+                            "+10%",
+                            4.5,
+                            3,
+                            "+5%",
+                            246500,
+                            "+5%"
+                          ],
+                          [
+                            "Mark Fisher",
+                            "MarkFisher@sparkl.com",
+                            "15.01.2025",
+                            "22.01.2025",
+                            138,
+                            "+15%",
+                            4.7,
+                            3,
+                            "+10%",
+                            267820,
+                            "+10%"
+                          ]
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/download": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Download Report (User Story 11, Optional)",
+        "description": "Downloads the report in the requested format (PDF, Excel, CSV) based on the cached report data.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cachedReportKey",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique key identifying the cached report data."
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["pdf", "excel", "csv"]
+            },
+            "description": "The desired format for the report (pdf, excel, csv)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report file link retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DownloadReportResponseDTO"
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "fileUrl": "https://travel-agency-app.s3.amazonaws.com/reports/abc123/report.pdf"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cached report data not found or expired.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Cached report data not found or expired."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserDTO": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["CUSTOMER", "TRAVEL_AGENT", "ADMIN"]
+          }
+        }
+      },
+      "UpdateUserNameRequestDTO": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateUserImageRequestDTO": {
+        "type": "object",
+        "properties": {
+          "imageBase64": {
+            "type": "string",
+            "description": "Base64 encoded string of the image."
+          }
+        }
+      },
+      "UpdateNameResponseDTO": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateImageResponseDTO": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdatePasswordRequestDTO": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string"
+          }
+        },
+        "required": ["currentPassword", "newPassword"]
+      },
+      "UpdatePasswordResponseDTO": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangeEmailRequestDTO": {
+        "type": "object",
+        "properties": {
+          "newEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": ["newEmail", "password"]
+      },
+      "ChangeEmailResponseDTO": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "A confirmation link has been sent to your new email address."
+          }
+        }
+      },
+      "TourFeedbackRequestDTO": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "number",
+            "description": "Rating for the tour, from 1 to 5."
+          },
+          "comment": {
+            "type": "string",
+            "description": "Optional comment about the tour."
+          }
+        },
+        "required": ["rating"]
+      },
+      "ForgotPasswordRequestDTO": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "The email address of the user requesting password recovery."
+          }
+        },
+        "required": ["email"]
+      },
+      "VerifyCodeRequestDTO": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "The email address of the user."
+          },
+          "verificationCode": {
+            "type": "string",
+            "description": "The verification code sent to the user's email."
+          }
+        },
+        "required": ["email", "verificationCode"]
+      },
+      "ResetPasswordRequestDTO": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "The email address of the user."
+          },
+          "verificationCode": {
+            "type": "string",
+            "description": "The verification code sent to the user's email."
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "The new password for the user."
+          }
+        },
+        "required": ["email", "verificationCode", "newPassword"]
+      },
+      "UploadDocumentsRequestDTO": {
+        "type": "object",
+        "properties": {
+          "payments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fileName": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "base64encodedDocument": {
+                  "type": "string"
+                }
+              },
+              "required": ["fileName", "type", "base64encodedDocument"]
+            }
+          },
+          "guestDocuments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "userName": {
+                  "type": "string"
+                },
+                "documents": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "fileName": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "base64encodedDocument": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["fileName", "type", "base64encodedDocument"]
+                  }
+                }
+              },
+              "required": ["userName", "documents"]
+            }
+          }
+        },
+        "required": ["payments", "guestDocuments"]
+      },
+      "RetrieveDocumentsResponseDTO": {
+        "type": "object",
+        "properties": {
+          "payments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "fileName": {
+                  "type": "string"
+                }
+              },
+              "required": ["id", "fileName"]
+            }
+          },
+          "guestDocuments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "userName": {
+                  "type": "string"
+                },
+                "documents": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "fileName": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["id", "fileName"]
+                  }
+                }
+              },
+              "required": ["userName", "documents"]
+            }
+          }
+        }
+      },
+      "BookedTourListResponseDTO": {
+        "type": "object",
+        "properties": {
+          "bookings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                },
+                "tourImageUrl": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "destination": {
+                  "type": "string"
+                },
+                "tourDetails": {
+                  "type": "object",
+                  "properties": {
+                    "date": {
+                      "type": "string"
+                    },
+                    "mealPlan": {
+                      "type": "string"
+                    },
+                    "guests": {
+                      "type": "string"
+                    },
+                    "totalPrice": {
+                      "type": "string"
+                    },
+                    "documents": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "travelAgent": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "messenger": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "customerDetails": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "documents": {
+                      "type": "object",
+                      "properties": {
+                        "payments": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "fileUrl": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "guestDocuments": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "userName": {
+                                "type": "string"
+                              },
+                              "documents": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "fileName": {
+                                      "type": "string"
+                                    },
+                                    "fileUrl": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "canceledBy": {
+                  "type": "string"
+                },
+                "cancelReason": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "GenerateReportRequestDTO": {
+        "type": "object",
+        "properties": {
+          "reportType": {
+            "type": "string",
+            "enum": ["STAFF_PERFORMANCE", "SALES"]
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "location": {
+            "type": "string"
+          }
+        },
+        "required": ["reportType", "startDate", "endDate", "location"]
+      },
+      "GenerateReportResponseDTO": {
+        "type": "object",
+        "properties": {
+          "cachedReportKey": {
+            "type": "string"
+          },
+          "reportType": {
+            "type": "string"
+          },
+          "reportData": {
+            "type": "object",
+            "properties": {
+              "columns": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "DownloadReportResponseDTO": {
+        "type": "object",
+        "properties": {
+          "fileUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URL to the report file stored in the S3 bucket."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
